@@ -1,0 +1,21 @@
+already-registered: "&cYou are already registered."
+short-password: "&cThe password is too short."
+long-password: "&cThe password is too long."
+success-register: "&aYou have successfully registered on the server."
+ip-register: "&cNumber of registrations from one IP address reached a maximum."
+auth-success: "&aYou have been successfully authorized on the server."
+many-password-attempts: "&cToo many password attempts."
+wrong-password: "&cIncorrect password."
+already-auth: "&cYou are already logged in."
+
+form:
+  register-title: "&lRegistration&r"
+  input-password: "&lPassword:&r\n&7Think of a strong password from 8 to 32 characters.&r"
+  confirm-input-password: "&lConfirm password:&r\n&7We need to make sure that you remember the password.&r"
+  auth-title: "&lAuthorization&r"
+  input-passw: "&lPassword:&r"
+
+already-play: "&cA player with this nickname already plays on the server!"
+
+# Debug tip message true/false
+debug-tip: false

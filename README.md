@@ -1,2 +1,4 @@
 # FormAuth
-A ServerAuth extension to do login/register directly on form
+An advanced authentication plugin in form for PocketMine-MP
+
+* Required: [FormAPI](https://github.com/jojoe77777/FormAPI)
