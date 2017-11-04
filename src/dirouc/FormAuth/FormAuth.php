@@ -32,6 +32,8 @@ class FormAuth extends PluginBase implements Listener {
 
     private $formAPI;
 
+    private $messages;
+
     public function onEnable() : void {
         @mkdir($this->getDataFolder());
         @mkdir($this->getDataFolder() . "players/");
@@ -46,6 +48,16 @@ class FormAuth extends PluginBase implements Listener {
             $this->getLogger()->info(TextFormat::YELLOW . "FormAPI plugin found! Enabling the plug-in...");
             $this->getLogger()->info(TextFormat::DARK_GREEN . "Plugin enabled.");
         }
+
+        $this->messages = new Messages($this);
+    }
+
+    public function getMessage($node, ...$vars) {
+        return $this->messages->getMessage($node, ...$vars);
+    }
+
+    public function getFAVersion() {
+        return $this->getDescription()->getVersion();
     }
 
     public function translateColors($message) : string {
@@ -108,14 +120,14 @@ class FormAuth extends PluginBase implements Listener {
 
     public function registerPlayer(Player $player, string $password) {
         if($this->isPlayerRegistered($player->getName())) {
-            $player->sendMessage($this->translateColors($this->getConfig()->get("already-registered")));
+            $player->sendMessage($this->translateColors($this->getMessage("already-registered")));
             return $this->reCreateForm($player);
         } else {
-            if(mb_strlen($password) <= 8){
-                $player->sendMessage($this->translateColors($this->getConfig()->get("short-password")));
+            if(mb_strlen($password) <= $this->getConfig()->get("minPasswordLength")) {
+                $player->sendMessage($this->translateColors($this->getMessage("short-password")));
                 return $this->reCreateForm($player);
-            } elseif(mb_strlen($password) >= 32) {
-                $player->sendMessage($this->translateColors($this->getConfig()->get("long-password")));
+            } elseif(mb_strlen($password) >= $this->getConfig()->get("maxPasswordLength")) {
+                $player->sendMessage($this->translateColors($this->getMessage("long-password")));
                 return $this->reCreateForm($player);
             } else {
                 if($this->grep($this->getDataFolder() . "players/", $player->getAddress()) + 1 <= 1) {
@@ -126,9 +138,9 @@ class FormAuth extends PluginBase implements Listener {
                     $data->set("lastlogin", time());
                     $data->save();
                     $this->auth_players[strtolower($player->getName())] = "";
-                    return $player->sendMessage($this->translateColors($this->getConfig()->get("success-register")));
+                    return $player->sendMessage($this->translateColors($this->getMessage("success-register")));
                 } else {
-                    return $player->sendMessage($this->translateColors($this->getConfig()->get("ip-register")));
+                    return $player->sendMessage($this->translateColors($this->getMessage("ip-register")));
                 }
             }
         }
@@ -151,7 +163,7 @@ class FormAuth extends PluginBase implements Listener {
                     $data->set("lastlogin", time());
                     $data->save();
                     $this->auth_players[strtolower($player->getName())] = "";
-                    return $player->sendMessage($this->translateColors($this->getConfig()->get("auth-success")));
+                    return $player->sendMessage($this->translateColors($this->getMessage("auth-success")));
                 } else {
                     if(isset($this->auth_attempts[strtolower($player->getName())])) {
                         $this->auth_attempts[strtolower($player->getName())]++;
@@ -159,14 +171,14 @@ class FormAuth extends PluginBase implements Listener {
                         $this->auth_attempts[strtolower($player->getName())] = 1;
                     }
                     if($this->auth_attempts[strtolower($player->getName())] >= 3) {
-                        $player->close("", $this->translateColors($this->getConfig()->get("many-password-attempts")));
+                        $player->close("", $this->translateColors($this->getMessage("many-password-attempts")));
                         unset($this->auth_attempts[strtolower($player->getName())]);
                     }
-                    $player->sendMessage($this->translateColors($this->getConfig()->get("wrong-password")));
+                    $player->sendMessage($this->translateColors($this->getMessage("wrong-password")));
                     return $this->reCreateForm($player);
                 }
             } else {
-                $player->sendMessage($this->translateColors($this->getConfig()->get("already-auth")));
+                $player->sendMessage($this->translateColors($this->getMessage("already-auth")));
             }
         } else {
             return $this->isPlayerRegistered($player->getName());
@@ -205,9 +217,9 @@ class FormAuth extends PluginBase implements Listener {
                             return true;
                     }
                 });
-                $form->setTitle($this->translateColors($this->getConfig()->getNested("form.register-title")));
-                $form->addInput($this->translateColors($this->getConfig()->getNested("form.input-password")));
-                $form->addInput($this->translateColors($this->getConfig()->getNested("form.confirm-input-password")));
+                $form->setTitle($this->translateColors($this->getMessage("form.register-title")));
+                $form->addInput($this->translateColors($this->getMessage("form.input-password", $this->getConfig()->get("minPasswordLength"), $this->getConfig()->get("maxPasswordLength"))));
+                $form->addInput($this->translateColors($this->getMessage("form.confirm-input-password")));
                 $form->sendToPlayer($player);
                 break;
             case 1:
@@ -227,19 +239,21 @@ class FormAuth extends PluginBase implements Listener {
                             return true;
                     }
                 });
-                $form->setTitle($this->translateColors($this->getConfig()->getNested("form.auth-title")));
-                $form->addInput($this->translateColors($this->getConfig()->getNested("form.input-passw")));
+                $form->setTitle($this->translateColors($this->getMessage("form.auth-title")));
+                $form->addInput($this->translateColors($this->getMessage("form.input-passw")));
                 $form->sendToPlayer($player);
                 break;
         }
     }
 
-    public function onPreLogin(PlayerPreLoginEvent $event){
+    public function onPreLogin(PlayerPreLoginEvent $event) {
         $player = $event->getPlayer();
-        foreach($this->getServer()->getOnlinePlayers() as $pl){
-            if(strtolower($pl->getName()) == strtolower($player->getName())){
-                $player->close("", $this->translateColors($this->getConfig()->get("already-play")));
-                $event->setCancelled(true);
+        if($this->getConfig()->get("force-single-auth") == true) {
+            foreach($this->getServer()->getOnlinePlayers() as $pl) {
+                if(strtolower($pl->getName()) == strtolower($player->getName())) {
+                    $player->close("", $this->translateColors($this->getMessage("already-play")));
+                    $event->setCancelled(true);
+                }
             }
         }
     }
@@ -251,30 +265,36 @@ class FormAuth extends PluginBase implements Listener {
 
     public function onPlayerMove(PlayerMoveEvent $event) {
         if(!$this->isPlayerAuthenticated($event->getPlayer())) {
-            $event->setCancelled(true);
+            if($this->getConfig()->get("allow-move") == false) {
+                $event->setCancelled(true);
+            } 
         }
     }
 
     public function onPlayerChat(PlayerChatEvent $event) {
-        if(!$this->isPlayerAuthenticated($event->getPlayer())) {
-            $event->setCancelled(true);
-        }
-        $recipients = $event->getRecipients();
-        foreach($recipients as $key => $recipient) {
-            if($recipient instanceof Player) {
-                if(!$this->isPlayerAuthenticated($recipient)) {
-                    unset($recipients[$key]);
+        if($this->getConfig()->get("block-chat") == true) {
+            if(!$this->isPlayerAuthenticated($event->getPlayer())) {
+                $event->setCancelled(true);
+            }
+            $recipients = $event->getRecipients();
+            foreach($recipients as $key => $recipient) {
+                if($recipient instanceof Player) {
+                    if(!$this->isPlayerAuthenticated($recipient)) {
+                        unset($recipients[$key]);
+                    }
                 }
             }
+            $event->setRecipients($recipients);
         }
-        $event->setRecipients($recipients);
     }
 
     public function onPlayerCommand(PlayerCommandPreprocessEvent $event) {
-        if(!$this->isPlayerAuthenticated($event->getPlayer())) {
-            $command = strtolower($event->getMessage());
-            if ($command{0} == "/") {
-                $event->setCancelled(true);
+        if($this->getConfig()->get("block-commands") == true) {
+            if(!$this->isPlayerAuthenticated($event->getPlayer())) {
+                $command = strtolower($event->getMessage());
+                if ($command{0} == "/") {
+                    $event->setCancelled(true);
+                }
             }
         }
     }
@@ -309,26 +329,34 @@ class FormAuth extends PluginBase implements Listener {
     }
 
     public function onDropItem(PlayerDropItemEvent $event) {
-        if(!$this->isPlayerAuthenticated($event->getPlayer())) {
-            $event->setCancelled(true);
-        }
+        if($this->getConfig()->get("block-all-events")) {
+            if(!$this->isPlayerAuthenticated($event->getPlayer())) {
+                $event->setCancelled(true);
+            }
+        }    
     }
 
     public function onItemConsume(PlayerItemConsumeEvent $event) {
-        if(!$this->isPlayerAuthenticated($event->getPlayer())) {
-            $event->setCancelled(true);
+        if($this->getConfig()->get("block-all-events")) {
+            if(!$this->isPlayerAuthenticated($event->getPlayer())) {
+                $event->setCancelled(true);
+            }
         }
     }
 
     public function onCraftItem(CraftItemEvent $event) {
-        if(!$this->isPlayerAuthenticated($event->getPlayer())) {
-            $event->setCancelled(true);
+        if($this->getConfig()->get("block-all-events")) {
+            if(!$this->isPlayerAuthenticated($event->getPlayer())) {
+                $event->setCancelled(true);
+            }
         }
     }
 
     public function onAwardAchievement(PlayerAchievementAwardedEvent $event) {
-        if(!$this->isPlayerAuthenticated($event->getPlayer())) {
-            $event->setCancelled(true);
+        if($this->getConfig()->get("block-all-events")) {
+            if(!$this->isPlayerAuthenticated($event->getPlayer())) {
+                $event->setCancelled(true);
+            }
         }
     }
 
@@ -345,16 +373,20 @@ class countdownTimer extends PluginTask {
     public function onRun($currentTick){
         $this->endingtime = $this->getOwner()->seconds + $this->secsTotal;
         $this->secondsLeft = $this->endingtime - time();
-        if($this->getOwner()->getConfig()->get("debug-tip"))
+        if($this->getOwner()->getConfig()->get("debug-message"))
             $this->player->sendTip($this->getOwner()->translateColors("&e" . $this->secondsLeft . "&r"));
         if($this->secondsLeft <= 0){
             if($this->getOwner()->isPlayerAuthenticated($this->player)) {
-                $playerdata = $this->getOwner()->getPlayerData($this->player->getName());
-                if($playerdata["ip"] == $this->player->getAddress()) {
-                    //
+                $playerdata = $this->getOwner()->getPlayerData($this->player->getName());        
+                if($this->getOwner()->getConfig()->get("IPLogin") == true) {
+                   if($playerdata["ip"] == $this->player->getAddress()) {
+                        //
+                    } else {
+                        $this->getOwner()->deauthenticatePlayer($this->player);
+                    }
                 } else {
                     $this->getOwner()->deauthenticatePlayer($this->player);
-                }
+                }     
             }
             if(!$this->getOwner()->isPlayerRegistered($this->player->getName())) {
                 $this->getOwner()->createForm(0, $this->player);
