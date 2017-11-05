@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace dirouc\FormAuth;
 
 use pocketmine\event\block\BlockBreakEvent;
@@ -195,7 +193,7 @@ class FormAuth extends PluginBase implements Listener {
                 } elseif(mb_strlen($new_password) >= $this->getConfig()->get("maxPasswordLength")) {
                     $player->sendMessage($this->translateColors($this->getMessage("long-password")));
                 } else {
-                    $data = new Config($this->getDataFolder() . "users/" . strtolower($player->getName() . ".yml"), Config::YAML);
+                    $data = new Config($this->getDataFolder() . "players/" . strtolower($player->getName() . ".yml"), Config::YAML);
                     $data->set("password", password_hash($new_password, PASSWORD_DEFAULT));
                     $data->save();
                     return $player->sendMessage($this->translateColors($this->getMessage("changepassword-success")));
@@ -209,7 +207,7 @@ class FormAuth extends PluginBase implements Listener {
     }
 
     public function reCreateForm($player) {
-        $this->startCountDownTimer($player, 3);
+        $this->startCountDownTimer($player, $this->getConfig()->get("create-form-sec"));
     }
 
     public function startCountDownTimer($player, $secsTotal) {
