@@ -193,7 +193,7 @@ class FormAuth extends PluginBase implements Listener {
                 } elseif(mb_strlen($new_password) >= $this->getConfig()->get("maxPasswordLength")) {
                     $player->sendMessage($this->translateColors($this->getMessage("long-password")));
                 } else {
-                    $data = new Config($this->getDataFolder() . "players/" . strtolower($player->getName() . ".yml"), Config::YAML);
+                    $data = new Config($this->getDataFolder() . "players/" . strtolower($player->getName() . ".json"), Config::JSON);
                     $data->set("password", password_hash($new_password, PASSWORD_DEFAULT));
                     $data->save();
                     return $player->sendMessage($this->translateColors($this->getMessage("changepassword-success")));
