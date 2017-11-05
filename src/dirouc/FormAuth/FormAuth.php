@@ -190,9 +190,9 @@ class FormAuth extends PluginBase implements Listener {
     public function changePlayerPassword($player, string $new_password) {
         if($player instanceof Player || $player instanceof OfflinePlayer) {
             if($this->isPlayerRegistered($player->getName())) {
-                if(mb_strlen($password) <= $this->getConfig()->get("minPasswordLength")) {
+                if(mb_strlen($new_password) <= $this->getConfig()->get("minPasswordLength")) {
                     $player->sendMessage($this->translateColors($this->getMessage("short-password")));
-                } elseif(mb_strlen($password) >= $this->getConfig()->get("maxPasswordLength")) {
+                } elseif(mb_strlen($new_password) >= $this->getConfig()->get("maxPasswordLength")) {
                     $player->sendMessage($this->translateColors($this->getMessage("long-password")));
                 } else {
                     $data = new Config($this->getDataFolder() . "users/" . strtolower($player->getName() . ".yml"), Config::YAML);
