@@ -23,7 +23,7 @@ form:
   input-passw: "&lПароль:&r"
   changepassword-title: "&lСмена пароля&r"
   input-new_password: "&lНовый пароль:&r"
-  input-new_password: "&lПовторите пароль:&r"
+  input-confirm_new_password: "&lПовторите пароль:&r"
 
 already-play: "&cИгрок с этим никнеймом уже играет на сервере!"
 ...

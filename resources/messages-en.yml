@@ -23,7 +23,7 @@ form:
   input-passw: "Password:&r"
   changepassword-title: "Change password&r"
   input-new_password: "&lNew password:&r"
-  input-new_password: "&lConfirm password:&r"
+  input-confirm_new_password: "&lConfirm password:&r"
 
 already-play: "&cA player with this nickname already plays on the server!"
 ...

@@ -410,6 +410,7 @@ class FormAuth extends PluginBase implements Listener {
         if($command->getName() == "changepassword") {
             $this->createForm(2, $sender);
         }
+        return true;
     }
 
 }
