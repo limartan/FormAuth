@@ -18,11 +18,13 @@ use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\Player;
+use pocketmine\OfflinePlayer;
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 use pocketmine\scheduler\PluginTask;
+use pocketmine\command\{Command, CommandSender};
 
 class FormAuth extends PluginBase implements Listener {
 
@@ -185,6 +187,27 @@ class FormAuth extends PluginBase implements Listener {
         }
     }
 
+    public function changePlayerPassword($player, string $new_password) {
+        if($player instanceof Player || $player instanceof OfflinePlayer) {
+            if($this->isPlayerRegistered($player->getName())) {
+                if(mb_strlen($password) <= $this->getConfig()->get("minPasswordLength")) {
+                    $player->sendMessage($this->translateColors($this->getMessage("short-password")));
+                } elseif(mb_strlen($password) >= $this->getConfig()->get("maxPasswordLength")) {
+                    $player->sendMessage($this->translateColors($this->getMessage("long-password")));
+                } else {
+                    $data = new Config($this->getDataFolder() . "users/" . strtolower($player->getName() . ".yml"), Config::YAML);
+                    $data->set("password", password_hash($new_password, PASSWORD_DEFAULT));
+                    $data->save();
+                    return $player->sendMessage($this->translateColors($this->getMessage("changepassword-success")));
+                }
+            }else{
+                return $this->isPlayerRegistered($player->getName());
+            }
+        }else{
+            return $player->sendMessage($this->translateColors($this->getMessage("no-already-register")));
+        }
+    }
+
     public function reCreateForm($player) {
         $this->startCountDownTimer($player, 3);
     }
@@ -241,6 +264,29 @@ class FormAuth extends PluginBase implements Listener {
                 });
                 $form->setTitle($this->translateColors($this->getMessage("form.auth-title")));
                 $form->addInput($this->translateColors($this->getMessage("form.input-passw")));
+                $form->sendToPlayer($player);
+                break;
+            case 2:
+                $form = $this->formAPI->createCustomForm(function (Player $player, array $data) {
+                    $result = $data[0];
+                    if ($result === null) {
+                        return true;
+                    }
+                    switch ($result) {
+                        case 0:
+                            if(!empty($data[0]) && !empty($data[1])) {
+                                if($data[0] == $data[1]) {
+                                    $this->changePlayerPassword($player, $data[0]);
+                                } else {
+                                   return $player->sendMessage($this->translateColors($this->getMessage("password-password")));
+                                }
+                            }
+                            return true;
+                    }
+                });
+                $form->setTitle($this->translateColors($this->getMessage("form.changepassword-title")));
+                $form->addInput($this->translateColors($this->getMessage("form.input-new_password")));
+                $form->addInput($this->translateColors($this->getMessage("form.input-confirm_new_password")));
                 $form->sendToPlayer($player);
                 break;
         }
@@ -357,6 +403,12 @@ class FormAuth extends PluginBase implements Listener {
             if(!$this->isPlayerAuthenticated($event->getPlayer())) {
                 $event->setCancelled(true);
             }
+        }
+    }
+
+    public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool {
+        if($command->getName() == "changepassword") {
+            $this->createForm(2, $sender);
         }
     }
 

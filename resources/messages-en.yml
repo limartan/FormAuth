@@ -11,6 +11,9 @@ auth-success: "&aYou have been successfully authorized on the server."
 many-password-attempts: "&cToo many password attempts."
 wrong-password: "&cIncorrect password."
 already-auth: "&cYou are already logged in."
+changepassword-success: "&aYou have successfully changed your password."
+no-already-register: "&cYou are not registered."
+password-password: "&cThe passwords you entered do not match."
 
 form:
   register-title: "Registration&r"
@@ -18,6 +21,9 @@ form:
   confirm-input-password: "Confirm password:&r\n&7We need to make sure that you remember the password.&r"
   auth-title: "Authorization&r"
   input-passw: "Password:&r"
+  changepassword-title: "Change password&r"
+  input-new_password: "&lNew password:&r"
+  input-new_password: "&lConfirm password:&r"
 
 already-play: "&cA player with this nickname already plays on the server!"
 ...
