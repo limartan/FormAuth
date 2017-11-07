@@ -133,9 +133,12 @@ class FormAuth extends PluginBase implements Listener {
                 if($this->grep($this->getDataFolder() . "players/", $player->getAddress()) + 1 <= 1) {
                     $data = new Config($this->getDataFolder() . "players/" . strtolower($player->getName() . ".json"), Config::JSON);
                     $data->set("password", password_hash($password, PASSWORD_DEFAULT));
-                    $data->set("ip", $player->getAddress());
+                    $data->set("firstip", $player->getAddress());
+                    $data->set("lastip", $player->getAddress());
                     $data->set("firstlogin", time());
                     $data->set("lastlogin", time());
+                    $data->set("firstclientid", $player->getClientId());
+                    $data->set("lastclientid", $player->getClientId());
                     $data->save();
                     $this->auth_players[strtolower($player->getName())] = "";
                     return $player->sendMessage($this->translateColors($this->getMessage("success-register")));
@@ -159,7 +162,7 @@ class FormAuth extends PluginBase implements Listener {
             if(!$this->isPlayerAuthenticated($player)) {
                 $data = new Config($this->getDataFolder() . "players/" . strtolower($player->getName() . ".json"), Config::JSON);
                 if(password_verify($password, $data->get("password"))) {
-                    $data->set("ip", $player->getAddress());
+                    $data->set("lastip", $player->getAddress());
                     $data->set("lastlogin", time());
                     $data->save();
                     $this->auth_players[strtolower($player->getName())] = "";
@@ -430,7 +433,7 @@ class countdownTimer extends PluginTask {
             if($this->getOwner()->isPlayerAuthenticated($this->player)) {
                 $playerdata = $this->getOwner()->getPlayerData($this->player->getName());        
                 if($this->getOwner()->getConfig()->get("IPLogin") == true) {
-                   if($playerdata["ip"] == $this->player->getAddress()) {
+                   if($playerdata["lastip"] == $this->player->getAddress()) {
                         //
                     } else {
                         $this->getOwner()->deauthenticatePlayer($this->player);
