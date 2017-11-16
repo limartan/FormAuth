@@ -17,7 +17,7 @@ password-password: "&c你輸入的密碼不匹配。"
 
 form:
   register-title: "註冊&r"
-  input-password: "密碼:&r\n&7想一個強一點的密碼 %var0% 到 %var1% 字元.&r"
+  input-password: "密碼:&r\n&7想一個密碼強度高的密碼由 %var0% 到 %var1% 個字元.&r"
   confirm-input-password: "確認密碼:&r\n&7我們需要確保你記得密碼。&r"
   auth-title: "登入&r"
   input-passw: "密碼:&r"
