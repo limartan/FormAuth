@@ -1,9 +1,11 @@
 ---
-# Set the default language for FormAuth v1.1.0
-# - en, ru, zho
+# Set the default language for FormAuth <3
+# - en, ru, uk, es, zh
 # English message resource by @dirouc (GitHub)
 # Russian message resource by @dirouc (GitHub)
-# Chinese message resource by @XuPaperCup (GitHub)
+# Ukrainian message resource by @dirouc (GitHub)
+# Spanish message resource by @Kaneki-chi (Github) 
+# Chinese message resource by @XuPaperCup (Github) 
 default-language: en
 
 #Keep logged in by IP

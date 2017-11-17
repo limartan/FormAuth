@@ -1,6 +1,6 @@
 ---
 messages-version: "1.0.0"
-language: "zho"
+language: "zh"
 
 already-registered: "&c你已註冊。"
 short-password: "&c密碼太短。"
