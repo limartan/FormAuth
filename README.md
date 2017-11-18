@@ -1,7 +1,7 @@
 # FormAuth
-An advanced authentication plugin in form for PocketMine-MP
-
 People view: [![HitCount](http://hits.dwyl.io/dirouc/FormAuth.svg)](http://hits.dwyl.io/dirouc/FormAuth)
+
+An advanced authentication plugin in form for PocketMine-MP
 
 ### [Latest builds](https://poggit.pmmp.io/ci/MinecartSquad/FormAuth/FormAuth)
 ### Required [FormAPI](https://github.com/jojoe77777/FormAPI)
